@@ -27,9 +27,9 @@ SkUEBlueprintInterface::SkUEBlueprintInterface()
   SK_ASSERTX(!ms_singleton_p, "There can be only one instance of this class.");
   ms_singleton_p = this;
 
-  m_struct_vector3_p          = GetBaseStructure(TEXT("Vector"));
-  m_struct_rotation_angles_p  = GetBaseStructure(TEXT("Rotator"));
-  m_struct_transform_p        = GetBaseStructure(TEXT("Transform"));
+  m_struct_vector3_p          = FindObjectChecked<UScriptStruct>(UObject::StaticClass(), TEXT("Vector"));
+  m_struct_rotation_angles_p  = FindObjectChecked<UScriptStruct>(UObject::StaticClass(), TEXT("Rotator"));
+  m_struct_transform_p        = FindObjectChecked<UScriptStruct>(UObject::StaticClass(), TEXT("Transform"));
   }
 
 //---------------------------------------------------------------------------------------
@@ -282,7 +282,7 @@ int32_t SkUEBlueprintInterface::try_add_method_entry(UClass * ue_class_p, SkMeth
 int32_t SkUEBlueprintInterface::add_function_entry(UClass * ue_class_p, SkMethodBase * sk_method_p, const FString & category)
   {
   // Create new UFunction
-  UFunction * ue_method_p = ConstructObject<UFunction>(UFunction::StaticClass(), ue_class_p, sk_method_p->get_name_cstr(), RF_Public | RF_RootSet);
+  UFunction * ue_method_p = ConstructObject<UFunction>(UFunction::StaticClass(), ue_class_p, sk_method_p->get_name_cstr(), RF_Public|RF_RootSet);
   ue_method_p->FunctionFlags |= FUNC_BlueprintCallable | FUNC_Native | FUNC_Public;
   if (sk_method_p->is_class_member())
     {
@@ -304,7 +304,7 @@ int32_t SkUEBlueprintInterface::add_function_entry(UClass * ue_class_p, SkMethod
   uint32_t num_params = param_list.get_length();
 
   // Store parameter info here
-  ParamInfo param_info = { 0 }; // Set to zero as otherwise the compiler will give silly warnings
+  ParamInfo param_info = {0}; // Set to zero as otherwise the compiler will give silly warnings
 
   // Method array entry that we will allocate
   FunctionEntry * function_entry_p = nullptr;
@@ -321,9 +321,9 @@ int32_t SkUEBlueprintInterface::add_function_entry(UClass * ue_class_p, SkMethod
       return -1;
       }
 
-      param_info.m_ue_param_p->PropertyFlags |= CPF_ReturnParm; // Flag as return value
-      ue_method_p->LinkChild(param_info.m_ue_param_p); // Link return param first so it will be last in the list
-      }
+    param_info.m_ue_param_p->PropertyFlags |= CPF_ReturnParm; // Flag as return value
+    ue_method_p->LinkChild(param_info.m_ue_param_p); // Link return param first so it will be last in the list
+    }
 
   // Allocate method entry
   function_entry_p = new(AMemory::malloc(sizeof(FunctionEntry) + num_params * sizeof(SkParamEntry), "FunctionEntry")) FunctionEntry(sk_method_p, ue_method_p, num_params, param_info.m_sk_value_getter_p);
@@ -337,7 +337,7 @@ int32_t SkUEBlueprintInterface::add_function_entry(UClass * ue_class_p, SkMethod
       goto skip_method;
       }
       
-      ue_method_p->LinkChild(param_info.m_ue_param_p); // Link in reverse order so it will be in correct order eventually
+    ue_method_p->LinkChild(param_info.m_ue_param_p); // Link in reverse order so it will be in correct order eventually
 
     SkParamEntry & param_entry = function_entry_p->get_param_entry_array()[i];
     param_entry.m_name = input_param->get_name();
@@ -542,7 +542,7 @@ bool SkUEBlueprintInterface::make_param(ParamInfo * out_param_info_p, UFunction 
     SK_ASSERTX(uclass_p, a_cstr_format("Class '%s' of parameter '%s' of method '%S.%S' being exported to Blueprints is not a known engine class.", sk_parameter_class_p->get_key_class_name().as_cstr_dbg(), param_name.GetPlainANSIString(), *ue_method_p->GetOwnerClass()->GetName(), *ue_method_p->GetName()));
     if (uclass_p)
       {
-      property_p = ConstructObject<UObjectProperty>(UObjectProperty::StaticClass(), ue_method_p, param_name, RF_Public);
+      property_p = ConstructObject<UObjectProperty>(uclass_p, ue_method_p, param_name);
       static_cast<UObjectProperty *>(property_p)->PropertyClass = uclass_p;
       k2_param_fetcher_p = &fetch_k2_param_entity;
       sk_value_getter_p = &get_sk_value_entity;

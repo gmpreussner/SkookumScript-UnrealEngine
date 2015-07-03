@@ -101,10 +101,12 @@ void FSkookumScriptEditor::on_class_updated(SkClass * sk_class_p, UClass * ue_cl
   for (auto obj_p : obj_array)
     {
     UK2Node_Event * event_node_p = Cast<UK2Node_Event>(obj_p);
-    UFunction * event_function_p = event_node_p->FindEventSignatureFunction();
+    //UFunction * event_function_p = event_node_p->FindEventSignatureFunction();
     // Also refresh all nodes with no target function as it is probably a Sk function that was deleted
     //if (!event_function_p || get_runtime()->is_skookum_blueprint_event(event_function_p))
-    if (event_function_p && get_runtime()->is_skookum_blueprint_event(event_function_p))
+    //if (event_function_p && get_runtime()->is_skookum_blueprint_event(event_function_p))
+    // HACK for now just check if name starts with lowercase "on_"
+    if (event_node_p->EventSignatureName.ToString().Find(TEXT("on_"), ESearchCase::CaseSensitive) == 0)
       {
       const UEdGraphSchema * schema_p = event_node_p->GetGraph()->GetSchema();
       schema_p->ReconstructNode(*event_node_p, true);

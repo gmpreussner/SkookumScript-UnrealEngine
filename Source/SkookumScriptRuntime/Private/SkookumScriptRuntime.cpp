@@ -57,7 +57,7 @@ class FSkookumScriptRuntime : public ISkookumScriptRuntime, public FTickableGame
     void          on_world_cleanup(UWorld * world_p, bool session_ended_b, bool cleanup_resources_b);
     void          on_asset_loaded(UObject * new_object_p);
 
-    void          set_game_world(UWorld * world_p);
+    void set_game_world(UWorld * world_p);
 
     virtual void  set_editor_interface(ISkookumScriptRuntimeEditorInterface * editor_interface_p);
     virtual bool  is_skookum_blueprint_function(UFunction * function_p) const override;
@@ -453,7 +453,7 @@ void FSkookumScriptRuntime::on_world_init_pre(UWorld * world_p, const UWorld::In
   //A_DPRINT("on_world_init_pre: %S %p\n", *world_p->GetName(), world_p);
 
   #ifdef SKOOKUM_REMOTE_UNREAL
-  SkUERemote::ms_client_p->ensure_connected();
+    SkUERemote::ms_client_p->ensure_connected();
   #endif
 
   if (world_p->IsGameWorld())
